@@ -9,7 +9,7 @@ import os
 import time
 import numpy as np
 import tensorflow as tf
-import cv2
+
 import config
 import tfutil
 import dataset
@@ -54,11 +54,13 @@ def setup_snapshot_image_grid(
         while True:
             real, label = training_set.get_minibatch_np(1)
             if resolution != -1:
-                real = cv2.resize(real, (resolution, resolution))
+                img = PIL.Image.fromarray(real[0], "RGB")
+                img = img.resize((resolution, resolution), PIL.Image.ANTIALIAS)
+                img = np.asarray(img)
             if layout == "row_per_class" and training_set.label_size > 0:
                 if label[0, y % training_set.label_size] == 0.0:
                     continue
-            reals[idx] = real[0]
+            reals[idx] = img
             labels[idx] = label[0]
             break
 
