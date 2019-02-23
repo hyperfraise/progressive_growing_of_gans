@@ -26,15 +26,19 @@ def setup_snapshot_image_grid(
     size="1080p",  # '1080p' = to be viewed on 1080p display, '4k' = to be viewed on 4k display.
     layout="random",
     generate_latent=True,
+    resolution=-1,
 ):  # 'random' = grid contents are selected randomly, 'row_per_class' = each row corresponds to one class label.
 
     # Select size.
     gw = 1
     gh = 1
-    if size == "1080p":
-        gw = np.clip(1920 // G.output_shape[3], 3, 32)
-        gh = np.clip(1080 // G.output_shape[2], 2, 32)
-    if size == "4k":
+    if resolution != -1:
+        gw = np.clip(resolution // G.output_shape[3], 4, 32)
+        gh = np.clip(resolution // G.output_shape[2], 4, 32)
+    elif size == "1080p":
+        gw = np.clip(1920 // G.output_shape[3], 4, 32)
+        gh = np.clip(1080 // G.output_shape[2], 4, 32)
+    elif size == "4k":
         gw = np.clip(3840 // G.output_shape[3], 7, 32)
         gh = np.clip(2160 // G.output_shape[2], 4, 32)
 
@@ -384,7 +388,11 @@ def train_progressive_gan(
                     grid_size=grid_size,
                 )
                 grid_size, grid_reals, grid_labels = setup_snapshot_image_grid(
-                    G, training_set, **config.grid, generate_latent=False
+                    G,
+                    training_set,
+                    **config.grid,
+                    generate_latent=False,
+                    resolution=sched.resolution,
                 )
                 misc.save_image_grid(
                     grid_reals,
