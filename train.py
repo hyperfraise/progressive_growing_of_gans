@@ -25,6 +25,7 @@ def setup_snapshot_image_grid(
     training_set,
     size="1080p",  # '1080p' = to be viewed on 1080p display, '4k' = to be viewed on 4k display.
     layout="random",
+    generate_latent=True,
 ):  # 'random' = grid contents are selected randomly, 'row_per_class' = each row corresponds to one class label.
 
     # Select size.
@@ -55,8 +56,11 @@ def setup_snapshot_image_grid(
             break
 
     # Generate latents.
-    latents = misc.random_latents(gw * gh, G)
-    return (gw, gh), reals, labels, latents
+    if generate_latent:
+        latents = misc.random_latents(gw * gh, G)
+        return (gw, gh), reals, labels, latents
+    else:
+        return (gw, gh), reals, labels
 
 
 # ----------------------------------------------------------------------------
@@ -197,14 +201,14 @@ def train_progressive_gan(
                 num_channels=training_set.shape[0],
                 resolution=training_set.shape[1],
                 label_size=training_set.label_size,
-                **config.G
+                **config.G,
             )
             D = tfutil.Network(
                 "D",
                 num_channels=training_set.shape[0],
                 resolution=training_set.shape[1],
                 label_size=training_set.label_size,
-                **config.D
+                **config.D,
             )
             Gs = G.clone("Gs")
         Gs_update_op = Gs.setup_as_moving_average_of(G, beta=G_smoothing)
@@ -245,7 +249,7 @@ def train_progressive_gan(
                     opt=G_opt,
                     training_set=training_set,
                     minibatch_size=minibatch_split,
-                    **config.G_loss
+                    **config.G_loss,
                 )
             with tf.name_scope("D_loss"), tf.control_dependencies(lod_assign_ops):
                 D_loss = tfutil.call_func_by_name(
@@ -256,7 +260,7 @@ def train_progressive_gan(
                     minibatch_size=minibatch_split,
                     reals=reals_gpu,
                     labels=labels_gpu,
-                    **config.D_loss
+                    **config.D_loss,
                 )
             G_opt.register_gradients(tf.reduce_mean(G_loss), G_gpu.trainables)
             D_opt.register_gradients(tf.reduce_mean(D_loss), D_gpu.trainables)
@@ -379,6 +383,15 @@ def train_progressive_gan(
                     drange=drange_net,
                     grid_size=grid_size,
                 )
+                grid_size, grid_reals, grid_labels = setup_snapshot_image_grid(
+                    G, training_set, **config.grid, generate_latent=False
+                )
+                misc.save_image_grid(
+                    grid_reals,
+                    os.path.join(result_subdir, "reals%06d.png" % (cur_nimg // 1000)),
+                    drange=training_set.dynamic_range,
+                    grid_size=grid_size,
+                )
             if cur_tick % network_snapshot_ticks == 0 or done:
                 misc.save_pkl(
                     (G, D, Gs),
@@ -390,6 +403,7 @@ def train_progressive_gan(
             # Record start time of the next tick.
             tick_start_time = time.time()
 
+    print("Ending")
     # Write final results.
     misc.save_pkl((G, D, Gs), os.path.join(result_subdir, "network-final.pkl"))
     summary_log.close()
