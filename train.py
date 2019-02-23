@@ -32,10 +32,7 @@ def setup_snapshot_image_grid(
     # Select size.
     gw = 1
     gh = 1
-    if resolution != -1:
-        gw = np.clip(resolution // G.output_shape[3], 4, 32)
-        gh = np.clip(resolution // G.output_shape[2], 4, 32)
-    elif size == "1080p":
+    if size == "1080p":
         gw = np.clip(1920 // G.output_shape[3], 4, 32)
         gh = np.clip(1080 // G.output_shape[2], 4, 32)
     elif size == "4k":
@@ -43,7 +40,11 @@ def setup_snapshot_image_grid(
         gh = np.clip(2160 // G.output_shape[2], 4, 32)
 
     # Fill in reals and labels.
-    reals = np.zeros([gw * gh] + training_set.shape, dtype=training_set.dtype)
+    shape = training_set.shape
+    if resolution != -1:
+        shape = [resolution, resolution, 3]
+
+    reals = np.zeros([gw * gh] + shape, dtype=training_set.dtype)
     labels = np.zeros(
         [gw * gh, training_set.label_size], dtype=training_set.label_dtype
     )
@@ -52,6 +53,8 @@ def setup_snapshot_image_grid(
         y = idx // gw
         while True:
             real, label = training_set.get_minibatch_np(1)
+            if resolution != -1:
+                real = cv2.resize(real, (resolution, resolution))
             if layout == "row_per_class" and training_set.label_size > 0:
                 if label[0, y % training_set.label_size] == 0.0:
                     continue
