@@ -57,6 +57,8 @@ def setup_snapshot_image_grid(
                 img = PIL.Image.fromarray(real[0], "RGB")
                 img = img.resize((resolution, resolution), PIL.Image.ANTIALIAS)
                 img = np.asarray(img)
+            else:
+                img = real[0]
             if layout == "row_per_class" and training_set.label_size > 0:
                 if label[0, y % training_set.label_size] == 0.0:
                     continue
