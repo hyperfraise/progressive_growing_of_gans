@@ -43,7 +43,7 @@ def setup_snapshot_image_grid(
     # Fill in reals and labels.
     shape = training_set.shape
     print(shape)
-
+    resolution = 128
     reals = np.zeros([gw * gh] + shape, dtype=training_set.dtype)
     labels = np.zeros(
         [gw * gh, training_set.label_size], dtype=training_set.label_dtype
