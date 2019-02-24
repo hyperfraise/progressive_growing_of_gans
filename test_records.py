@@ -22,7 +22,6 @@ with tf.Session() as sess:
     while True:
         try:
             data_record = sess.run(next_element)
-            print(data_record)
             img = Image.fromarray(data_record, 'RGB')
             img.save( "output/" + str(i) + '-train.png')
             i+=1
