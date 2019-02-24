@@ -1,16 +1,11 @@
 import tensorflow as tf
 
 def extract_fn(data_record):
-    features = {
-        # Extract features using the keys set during creation
-        'int_list1': tf.FixedLenFeature([], tf.int64),
-        'float_list1': tf.FixedLenFeature([], tf.float32),
-        'str_list1': tf.FixedLenFeature([], tf.string),
-        # If size is different of different records, use VarLenFeature
-        'float_list2': tf.VarLenFeature(tf.float32)
-    }
-    sample = tf.parse_single_example(data_record, features)
-    return sample
+    ex = tf.train.Example()
+    ex.ParseFromString(data_record)
+    shape = ex.features.feature["shape"].int64_list.value
+    data = ex.features.feature["data"].bytes_list.value[0]
+    return np.fromstring(data, np.uint8).reshape(shape)
 
 # Initialize all tfrecord paths
 dataset = tf.data.TFRecordDataset(['datasets/tfnabirds/tfnabirds-r02.tfrecords'])
