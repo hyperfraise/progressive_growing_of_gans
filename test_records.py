@@ -23,7 +23,7 @@ def get_all_records(FILE):
    try:
      while True:
        example = sess.run([image])
-   except tf.errors.OutOfRangeError, e:
+   except tf.errors.OutOfRangeError as e:
      coord.request_stop(e)
    finally:
      coord.request_stop()
