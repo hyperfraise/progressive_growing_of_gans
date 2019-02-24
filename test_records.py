@@ -42,4 +42,4 @@ def get_all_records(FILE):
    coord.request_stop()
    coord.join(threads)
 
-get_all_records('datasets/tfnabrids/tfnabirds-r02.tfrecords')
+get_all_records('datasets/tfnabirds/tfnabirds-r02.tfrecords')
