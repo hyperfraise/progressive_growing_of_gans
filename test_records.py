@@ -13,20 +13,18 @@ def read_and_decode(filename_queue):
       'label': tf.FixedLenFeature([], tf.int64),
       'height': tf.FixedLenFeature([], tf.int64),
       'width': tf.FixedLenFeature([], tf.int64),
-      'depth': tf.FixedLenFeature([], tf.int64)
   })
  image = tf.decode_raw(features['image_raw'], tf.uint8)
  label = tf.cast(features['label'], tf.int32)
  height = tf.cast(features['height'], tf.int32)
  width = tf.cast(features['width'], tf.int32)
- depth = tf.cast(features['depth'], tf.int32)
- return image, label, height, width, depth
+ return image, label, height, width
 
 
 def get_all_records(FILE):
  with tf.Session() as sess:
    filename_queue = tf.train.string_input_producer([ FILE ])
-   image, label, height, width, depth = read_and_decode(filename_queue)
+   image, label, height, width = read_and_decode(filename_queue)
    image = tf.reshape(image, tf.stack([height, width, 3]))
    image.set_shape([720,720,3])
    init_op = tf.initialize_all_variables()
