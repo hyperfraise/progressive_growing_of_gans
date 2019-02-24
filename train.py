@@ -42,8 +42,7 @@ def setup_snapshot_image_grid(
 
     # Fill in reals and labels.
     shape = training_set.shape
-    if resolution != -1:
-        shape = [resolution, resolution, 3]
+    print(shape)
 
     reals = np.zeros([gw * gh] + shape, dtype=training_set.dtype)
     labels = np.zeros(
@@ -57,6 +56,7 @@ def setup_snapshot_image_grid(
             if resolution != -1:
                 img = PIL.Image.fromarray(real[0], "RGB")
                 img = img.resize((resolution, resolution), PIL.Image.ANTIALIAS)
+                img = img.resize(shape[1:], PIL.Image.NEAREST)
                 img = np.asarray(img)
             else:
                 img = real[0]
