@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+from PIL import Image
 
 def extract_fn(data_record):
     print(data_record)
