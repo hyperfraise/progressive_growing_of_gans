@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 def extract_fn(data_record):
     print(data_record)
