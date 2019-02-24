@@ -2,7 +2,7 @@ import tensorflow as tf
 
 def extract_fn(data_record):
     ex = tf.train.Example()
-    ex.ParseFromString(data_record)
+    ex.ParseFromString(data_record[0])
     shape = ex.features.feature["shape"].int64_list.value
     data = ex.features.feature["data"].bytes_list.value[0]
     return np.fromstring(data, np.uint8).reshape(shape)
@@ -16,8 +16,11 @@ next_element = iterator.get_next()
 i= 0
 with tf.Session() as sess:
     while True:
-        data_record = sess.run(next_element)
-        print(data_record)
-        img = Image.fromarray(data_record, 'RGB')
-        img.save( "output/" + str(i) + '-train.png')
-        i++1
+        try:
+            data_record = sess.run(next_element)
+            print(data_record)
+            img = Image.fromarray(data_record, 'RGB')
+            img.save( "output/" + str(i) + '-train.png')
+            i+=1
+        except Exception as e:
+            print(e)
