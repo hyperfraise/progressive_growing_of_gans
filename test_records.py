@@ -19,12 +19,8 @@ iterator = dataset.make_one_shot_iterator()
 next_element = iterator.get_next()
 
 with tf.Session() as sess:
-    try:
-        while True:
-            data_record = sess.run(next_element)
-            print(data_record)
-            img = Image.fromarray(data_record, 'RGB')
-            img.save( "output/" + str(i) + '-train.png')
-
-    except:
-        pass
+    while True:
+        data_record = sess.run(next_element)
+        print(data_record)
+        img = Image.fromarray(data_record, 'RGB')
+        img.save( "output/" + str(i) + '-train.png')
