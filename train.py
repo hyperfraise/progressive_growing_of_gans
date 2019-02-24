@@ -55,11 +55,12 @@ def setup_snapshot_image_grid(
             real, label = training_set.get_minibatch_np(1)
             if resolution != -1:
                 print(real.shape)
-                img = PIL.Image.fromarray(real[0], "RGB")
+                img = real[0].transpose((1, 2, 0))
+                img = PIL.Image.fromarray(img, "RGB")
                 print(np.asarray(img).shape)
                 img = img.resize((resolution, resolution), PIL.Image.ANTIALIAS)
                 img = img.resize(shape[1:], PIL.Image.NEAREST)
-                img = np.asarray(img)
+                img = np.asarray(img).transpose((2, 0, 1))
             else:
                 img = real[0]
             if layout == "row_per_class" and training_set.label_size > 0:
