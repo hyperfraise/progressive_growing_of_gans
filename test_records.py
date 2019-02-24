@@ -1,43 +1,30 @@
-from PIL import Image
-import numpy as np
 import tensorflow as tf
 
-def read_and_decode(filename_queue):
- reader = tf.TFRecordReader()
- _, serialized_example = reader.read(filename_queue)
- features = tf.parse_single_example(
-  serialized_example,
-  # Defaults are not specified since both keys are required.
-  features={
-      'image_raw': tf.FixedLenFeature([], tf.string),
-      'label': tf.FixedLenFeature([], tf.int64),
-      'height': tf.FixedLenFeature([], tf.int64),
-      'width': tf.FixedLenFeature([], tf.int64),
-  })
- image = tf.decode_raw(features['image_raw'], tf.uint8)
- label = tf.cast(features['label'], tf.int32)
- height = tf.cast(features['height'], tf.int32)
- width = tf.cast(features['width'], tf.int32)
- return image, label, height, width
+def extract_fn(data_record):
+    features = {
+        # Extract features using the keys set during creation
+        'int_list1': tf.FixedLenFeature([], tf.int64),
+        'float_list1': tf.FixedLenFeature([], tf.float32),
+        'str_list1': tf.FixedLenFeature([], tf.string),
+        # If size is different of different records, use VarLenFeature
+        'float_list2': tf.VarLenFeature(tf.float32)
+    }
+    sample = tf.parse_single_example(data_record, features)
+    return sample
 
+# Initialize all tfrecord paths
+dataset = tf.data.TFRecordDataset(['datasets/tfnabirds/tfnabirds-r02.tfrecords'])
+dataset = dataset.map(extract_fn)
+iterator = dataset.make_one_shot_iterator()
+next_element = iterator.get_next()
 
-def get_all_records(FILE):
- with tf.Session() as sess:
-   filename_queue = tf.train.string_input_producer([ FILE ])
-   image, label, height, width = read_and_decode(filename_queue)
-   image = tf.reshape(image, tf.stack([height, width, 3]))
-   image.set_shape([720,720,3])
-   init_op = tf.initialize_all_variables()
-   sess.run(init_op)
-   coord = tf.train.Coordinator()
-   threads = tf.train.start_queue_runners(coord=coord)
-   for i in range(2053):
-     example, l = sess.run([image, label])
-     img = Image.fromarray(example, 'RGB')
-     img.save( "output/" + str(i) + '-train.png')
+with tf.Session() as sess:
+    try:
+        while True:
+            data_record = sess.run(next_element)
+            print(data_record)
+            img = Image.fromarray(data_record, 'RGB')
+            img.save( "output/" + str(i) + '-train.png')
 
-     print (example,l)
-   coord.request_stop()
-   coord.join(threads)
-
-get_all_records('datasets/tfnabirds/tfnabirds-r02.tfrecords')
+    except:
+        pass
