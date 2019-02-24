@@ -1,6 +1,8 @@
 import tensorflow as tf
 
 def extract_fn(data_record):
+    print(data_record)
+    return np.zeros((1,1,3))
     ex = tf.train.Example()
     ex.ParseFromString(data_record[0])
     shape = ex.features.feature["shape"].int64_list.value
